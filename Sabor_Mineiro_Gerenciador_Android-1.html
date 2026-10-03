@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<meta name="theme-color" content="#0757B8">
+<title>Sabor Mineiro - Gerenciador</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f3f7fc;color:#172033}
+header{background:#0757B8;color:#fff;padding:18px 18px 16px;position:sticky;top:0;z-index:5}
+.brand{display:flex;align-items:center;gap:12px}.mark{width:48px;height:48px;border-radius:14px;background:#fff;color:#0757B8;display:grid;place-items:center;font-weight:900;font-size:20px}
+h1{font-size:21px;margin:0}.slogan{font-size:12px;opacity:.9;margin-top:3px}
+main{padding:16px;max-width:760px;margin:auto;padding-bottom:95px}
+.card{background:#fff;border-radius:18px;padding:16px;margin-bottom:14px;box-shadow:0 4px 18px #0b3d7b12}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stat{padding:14px;border-radius:15px;background:#edf5ff}.stat b{display:block;font-size:23px;color:#0757B8}.stat span{font-size:12px;color:#637083}
+button{border:0;border-radius:12px;padding:12px 14px;font-weight:700;cursor:pointer}
+.primary{background:#0757B8;color:#fff}.secondary{background:#e8f2ff;color:#0757B8}.danger{background:#ffe9e9;color:#b42318}
+input,select,textarea{width:100%;padding:12px;border:1px solid #d5ddea;border-radius:11px;margin-top:6px;font-size:15px;background:#fff}
+label{font-size:12px;font-weight:700;color:#4d5a6d;display:block;margin-bottom:10px}
+.row{display:flex;gap:8px;align-items:center;justify-content:space-between}.item{border-top:1px solid #edf0f5;padding:12px 0}
+.item:first-child{border-top:0}.muted{color:#6b7788;font-size:13px}.price{font-weight:800;color:#0757B8}
+.badge{display:inline-block;background:#e8f2ff;color:#0757B8;border-radius:20px;padding:5px 9px;font-size:11px;font-weight:700}
+nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #dce4ef;display:flex;justify-content:space-around;padding:8px 5px calc(8px + env(safe-area-inset-bottom));z-index:10}
+nav button{background:transparent;color:#607087;font-size:11px;padding:7px 12px}nav button.active{color:#0757B8}
+.hidden{display:none}.back{margin-bottom:12px}.empty{text-align:center;padding:25px;color:#77849a}
+h2{font-size:18px;margin:3px 0 14px}h3{font-size:15px;margin:0 0 6px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+@media(max-width:520px){.grid{grid-template-columns:1fr}.grid3{grid-template-columns:1fr 1fr}.stat b{font-size:20px}}
+</style>
+</head>
+<body>
+<header>
+ <div class="brand"><div class="mark">SM</div><div><h1>Sabor Mineiro</h1><div class="slogan">Entregando Qualidade e Sabor.</div></div></div>
+</header>
+<main>
+<section id="dashboard">
+ <div class="card"><h2>Painel do administrador</h2><div class="grid3">
+  <div class="stat"><b id="nClientes">0</b><span>Clientes</span></div>
+  <div class="stat"><b id="nProdutos">0</b><span>Mercadorias</span></div>
+  <div class="stat"><b id="nVendas">0</b><span>Vendas</span></div>
+ </div><div class="grid" style="margin-top:10px">
+  <div class="stat"><b id="nRecebido">R$ 0,00</b><span>Recebido</span></div>
+  <div class="stat"><b id="nPendente">R$ 0,00</b><span>Pendente</span></div>
+ </div></div>
+ <div class="card"><h2>Acesso rápido</h2><div class="actions">
+  <button class="primary" onclick="abrir('clientes')">👥 Clientes</button>
+  <button class="secondary" onclick="abrir('produtos')">📦 Mercadorias</button>
+  <button class="secondary" onclick="abrir('historico')">📚 Histórico</button>
+  <button class="secondary" onclick="abrir('receber')">💰 A receber</button>
+  <button class="secondary" onclick="abrir('relatorios')">📊 Relatórios</button>
+  <button class="secondary" onclick="novoCliente()">＋ Novo cliente</button>
+ </div></div>
+ <div class="card"><h2>Próximos passos</h2><p class="muted">A base administrativa está pronta. Agora vamos acrescentar fechamento de pedidos, pagamentos e histórico sem perder seus cadastros.</p></div>
+</section>
+
+<section id="clientes" class="hidden">
+ <div class="row"><h2>Clientes</h2><button class="primary" onclick="novoCliente()">＋ Novo</button></div>
+ <input id="buscaCliente" placeholder="🔎 Buscar cliente..." oninput="renderClientes()">
+ <div id="listaClientes" class="card" style="margin-top:12px"></div>
+</section>
+
+<section id="produtos" class="hidden">
+ <div class="row"><h2>Mercadorias</h2><button class="primary" onclick="novoProduto()">＋ Novo</button></div>
+ <input id="buscaProduto" placeholder="🔎 Buscar mercadoria..." oninput="renderProdutos()">
+ <div id="listaProdutos" class="card" style="margin-top:12px"></div>
+</section>
+
+<section id="formCliente" class="hidden">
+ <button class="secondary back" onclick="abrir('clientes')">← Voltar</button>
+ <div class="card"><h2 id="tituloCliente">Novo cliente</h2><input type="hidden" id="clienteId">
+ <label>Nome<input id="nome" required></label><label>Telefone<input id="telefone" inputmode="tel"></label>
+ <div class="grid"><label>CEP<input id="cep"></label><label>Número<input id="numero"></label></div>
+ <label>Rua<input id="rua"></label><label>Bairro<input id="bairro"></label><label>Cidade<input id="cidade"></label>
+ <label>Dia do pagamento<input id="dataPagamento" type="date"></label><label>Observações<textarea id="obs"></textarea></label>
+ <button class="primary" onclick="salvarCliente()">Salvar cliente</button></div>
+</section>
+
+<section id="formProduto" class="hidden">
+ <button class="secondary back" onclick="abrir('produtos')">← Voltar</button>
+ <div class="card"><h2 id="tituloProduto">Nova mercadoria</h2><input type="hidden" id="produtoId">
+ <label>Mercadoria<input id="produtoNome"></label><div class="grid">
+ <label>Unidade de venda<input id="produtoUnidade" placeholder="pacote, caixa, unidade..."></label>
+ <label>Preço<input id="produtoPreco" inputmode="decimal" placeholder="35,00"></label></div>
+ <button class="primary" onclick="salvarProduto()">Salvar mercadoria</button></div>
+</section>
+
+<section id="historico" class="hidden">
+ <div class="row"><h2>Histórico de vendas</h2></div>
+ <div class="card"><input id="buscaVenda" placeholder="🔎 Buscar por cliente..." oninput="renderHistorico()"></div>
+ <div id="listaHistorico" class="card"></div>
+</section>
+
+<section id="relatorios" class="hidden">
+ <div class="row"><h2>Relatórios</h2></div>
+ <div class="card">
+  <label>Período
+   <select id="periodoRelatorio" onchange="renderRelatorios()">
+    <option value="hoje">Hoje</option><option value="7">Últimos 7 dias</option><option value="30" selected>Últimos 30 dias</option><option value="todos">Todo o período</option>
+   </select>
+  </label>
+ </div>
+ <div class="grid">
+  <div class="stat"><b id="relVendas">0</b><span>Vendas</span></div>
+  <div class="stat"><b id="relFaturado">R$ 0,00</b><span>Faturado</span></div>
+  <div class="stat"><b id="relRecebido">R$ 0,00</b><span>Recebido</span></div>
+  <div class="stat"><b id="relPendente">R$ 0,00</b><span>Pendente</span></div>
+ </div>
+ <div id="relDetalhes" class="card" style="margin-top:14px"></div>
+</section>
+
+<section id="receber" class="hidden">
+ <div class="row"><h2>Contas a receber</h2></div>
+ <div class="card"><div class="grid">
+  <div class="stat"><b id="receberTotal">R$ 0,00</b><span>Total pendente</span></div>
+  <div class="stat"><b id="receberQtd">0</b><span>Contas pendentes</span></div>
+ </div></div>
+ <div id="listaReceber" class="card"></div>
+</section>
+
+<section id="ficha" class="hidden">
+ <button class="secondary back" onclick="abrir('clientes')">← Voltar</button>
+ <div id="fichaConteudo"></div>
+</section>
+</main>
+<nav>
+ <button id="navdashboard" onclick="abrir('dashboard')">⌂<br>Início</button>
+ <button id="navclientes" onclick="abrir('clientes')">👥<br>Clientes</button>
+ <button id="navprodutos" onclick="abrir('produtos')">📦<br>Mercadorias</button>
+ <button id="navhistorico" onclick="abrir('historico')">📚<br>Histórico</button>
+ <button id="navreceber" onclick="abrir('receber')">💰<br>A receber</button>
+ <button id="navrelatorios" onclick="abrir('relatorios')">📊<br>Relatórios</button>
+</nav>
+<script>
+const KC='sabor_mineiro_clientes_v1', KP='sabor_mineiro_produtos_v1', KV='sabor_mineiro_vendas_v1';
+let clientes=JSON.parse(localStorage.getItem(KC)||'[]');
+let produtos=JSON.parse(localStorage.getItem(KP)||'[]');
+let vendas=JSON.parse(localStorage.getItem(KV)||'[]');
+let tela='dashboard';
+const $=id=>document.getElementById(id);
+const moeda=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+function salvar(){localStorage.setItem(KC,JSON.stringify(clientes))}
+function salvarP(){localStorage.setItem(KP,JSON.stringify(produtos))}
+function salvarV(){localStorage.setItem(KV,JSON.stringify(vendas))}
+function abrir(t){
+ tela=t;
+ ['dashboard','clientes','produtos','formCliente','formProduto','ficha','historico','receber','relatorios'].forEach(x=>$(x).classList.toggle('hidden',x!==t));
+ document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+ if(['dashboard','clientes','produtos'].includes(t)) $('nav'+t).classList.add('active');
+ if(t==='clientes')renderClientes(); if(t==='produtos')renderProdutos(); if(t==='dashboard')dashboard(); if(t==='historico')renderHistorico(); if(t==='receber')renderReceber(); if(t==='relatorios')renderRelatorios();
+ window.scrollTo(0,0)
+}
+function dashboard(){
+ $('nClientes').textContent=clientes.length;$('nProdutos').textContent=produtos.length;
+ $('nVendas').textContent=vendas.length;
+ let rec=vendas.filter(v=>v.status==='Pago').reduce((s,v)=>s+v.total,0);
+ let pend=vendas.filter(v=>v.status!=='Pago').reduce((s,v)=>s+v.total,0);
+ $('nRecebido').textContent=moeda(rec);$('nPendente').textContent=moeda(pend);
+}
+function novoCliente(){
+ ['clienteId','nome','telefone','cep','numero','rua','bairro','cidade','dataPagamento','obs'].forEach(x=>$(x).value='');
+ $('tituloCliente').textContent='Novo cliente';abrir('formCliente')
+}
+function salvarCliente(){
+ let id=$('clienteId').value;
+ let c={id:id||Date.now().toString(),nome:$('nome').value.trim(),telefone:$('telefone').value.trim(),cep:$('cep').value.trim(),numero:$('numero').value.trim(),rua:$('rua').value.trim(),bairro:$('bairro').value.trim(),cidade:$('cidade').value.trim(),dataPagamento:$('dataPagamento').value,obs:$('obs').value.trim(),itens:id?(clientes.find(x=>x.id===id)?.itens||[]):[]};
+ if(!c.nome){alert('Informe o nome do cliente.');return}
+ if(id){let i=clientes.findIndex(x=>x.id===id);clientes[i]=c}else clientes.push(c);salvar();abrir('clientes')
+}
+function renderClientes(){
+ let q=($('buscaCliente').value||'').toLowerCase();
+ let arr=clientes.filter(c=>(c.nome+' '+c.telefone).toLowerCase().includes(q));
+ $('listaClientes').innerHTML=arr.length?arr.map(c=>`<div class="item"><div class="row"><div><h3>${esc(c.nome)}</h3><div class="muted">${esc(c.telefone||'Sem telefone')}</div></div><button class="secondary" onclick="ficha('${c.id}')">Abrir</button></div></div>`).join(''):'<div class="empty">Nenhum cliente encontrado.</div>'
+}
+function editarCliente(id){
+ let c=clientes.find(x=>x.id===id);if(!c)return;
+ $('clienteId').value=c.id;$('tituloCliente').textContent='Editar cliente';
+ ['nome','telefone','cep','numero','rua','bairro','cidade','dataPagamento','obs'].forEach(x=>$(x).value=c[x]||'');abrir('formCliente')
+}
+function excluirCliente(id){if(confirm('Excluir este cliente?')){clientes=clientes.filter(c=>c.id!==id);salvar();abrir('clientes')}}
+function novoProduto(){
+ ['produtoId','produtoNome','produtoUnidade','produtoPreco'].forEach(x=>$(x).value='');
+ $('tituloProduto').textContent='Nova mercadoria';abrir('formProduto')
+}
+function numero(s){return Number(String(s||'').replace(/\./g,'').replace(',','.'))||0}
+function salvarProduto(){
+ let id=$('produtoId').value,p={id:id||Date.now().toString(),nome:$('produtoNome').value.trim(),unidade:$('produtoUnidade').value.trim(),preco:numero($('produtoPreco').value)};
+ if(!p.nome){alert('Informe a mercadoria.');return}
+ if(id){let i=produtos.findIndex(x=>x.id===id);produtos[i]=p}else produtos.push(p);salvarP();abrir('produtos')
+}
+function renderProdutos(){
+ let q=($('buscaProduto').value||'').toLowerCase();
+ let arr=produtos.filter(p=>p.nome.toLowerCase().includes(q));
+ $('listaProdutos').innerHTML=arr.length?arr.map(p=>`<div class="item"><div class="row"><div><h3>${esc(p.nome)}</h3><span class="badge">${esc(p.unidade||'unidade')}</span> <span class="price">${moeda(p.preco)}</span></div><div class="actions"><button class="secondary" onclick="editarProduto('${p.id}')">Editar</button><button class="danger" onclick="excluirProduto('${p.id}')">Excluir</button></div></div></div>`).join(''):'<div class="empty">Nenhuma mercadoria cadastrada.</div>'
+}
+function editarProduto(id){let p=produtos.find(x=>x.id===id);if(!p)return;$('produtoId').value=p.id;$('produtoNome').value=p.nome;$('produtoUnidade').value=p.unidade;$('produtoPreco').value=p.preco.toFixed(2).replace('.',',');$('tituloProduto').textContent='Editar mercadoria';abrir('formProduto')}
+function excluirProduto(id){if(confirm('Excluir esta mercadoria?')){produtos=produtos.filter(p=>p.id!==id);salvarP();renderProdutos()}}
+function ficha(id){
+ let c=clientes.find(x=>x.id===id);if(!c)return;
+ let total=(c.itens||[]).reduce((s,i)=>s+i.preco*i.qtd,0);
+ let historico=vendas.filter(v=>v.clienteId===id).slice().reverse();
+ let itens=(c.itens||[]);
+ $('fichaConteudo').innerHTML=`<div class="card"><div class="row"><div><h2>${esc(c.nome)}</h2><div class="muted">${esc(c.telefone||'Sem telefone')}</div></div><span class="badge">CLIENTE</span></div>
+ <p class="muted">${esc([c.rua,c.numero,c.bairro,c.cidade].filter(Boolean).join(', ')||'Endereço não informado')}</p>
+ <p><b>Dia do pagamento:</b> ${c.dataPagamento?new Date(c.dataPagamento+'T12:00').toLocaleDateString('pt-BR'):'Não informado'}</p>
+ <div class="actions"><button class="secondary" onclick="editarCliente('${c.id}')">Editar</button><button class="danger" onclick="excluirCliente('${c.id}')">Excluir</button></div></div>
+ <div class="card"><div class="row"><h2>Pedido atual</h2><button class="primary" onclick="adicionarItem('${c.id}')">＋ Mercadoria</button></div>
+ ${itens.length?(itens.map((i,n)=>`<div class="item"><div class="row"><div><h3>${esc(i.nome)}</h3><div class="muted">${i.qtd} ${esc(i.unidade)} × ${moeda(i.preco)}</div></div><div><b>${moeda(i.qtd*i.preco)}</b><br><button class="danger" onclick="removerItem('${c.id}',${n})">Remover</button></div></div></div>`).join('')+`<div class="row" style="padding-top:14px"><b>Total</b><b class="price">${moeda(total)}</b></div><div class="actions"><button class="primary" onclick="fecharVenda('${c.id}')">✓ Fechar venda</button></div>`):'<div class="empty">Nenhuma mercadoria adicionada ao pedido.</div>'}</div>
+ <div class="card"><h2>Histórico deste cliente</h2>${historico.length?historico.map(v=>`<div class="item"><div class="row"><div><h3>${dataBR(v.data)} — ${moeda(v.total)}</h3><div class="muted">${esc(v.forma)} · ${esc(v.status)}</div></div><span class="badge">${v.itens.length} item(ns)</span></div></div>`).join(''):'<div class="empty">Nenhuma venda fechada.</div>'}</div>`;
+ abrir('ficha')
+}
+function inicioPeriodo(tipo){
+ let d=new Date(); d.setHours(0,0,0,0);
+ if(tipo==='hoje')return d;
+ if(tipo==='todos')return new Date(2000,0,1);
+ d.setDate(d.getDate()-Number(tipo)+1); return d;
+}
+function renderRelatorios(){
+ let tipo=$('periodoRelatorio')?.value||'30', ini=inicioPeriodo(tipo);
+ let arr=vendas.filter(v=>new Date(v.data+'T12:00')>=ini);
+ let faturado=arr.reduce((s,v)=>s+v.total,0);
+ let recebido=arr.reduce((s,v)=>s+Math.min(v.total,v.totalRecebido||((v.status==='Pago')?v.total:0)),0);
+ let pendente=Math.max(0,faturado-recebido);
+ $('relVendas').textContent=arr.length;$('relFaturado').textContent=moeda(faturado);$('relRecebido').textContent=moeda(recebido);$('relPendente').textContent=moeda(pendente);
+ let porForma={}; arr.forEach(v=>porForma[v.forma]=(porForma[v.forma]||0)+v.total);
+ let linhas=Object.entries(porForma).map(([f,v])=>`<div class="item"><div class="row"><span>${esc(f)}</span><b>${moeda(v)}</b></div></div>`).join('');
+ $('relDetalhes').innerHTML=`<h2>Resumo por forma de pagamento</h2>${linhas||'<div class="empty">Nenhuma venda no período.</div>'}`;
+}
+function dataBR(s){return s?new Date(s+'T12:00').toLocaleDateString('pt-BR'):'—'}
+function fecharVenda(id){
+ let c=clientes.find(x=>x.id===id), itens=(c?.itens||[]);
+ if(!c||!itens.length)return;
+ let total=itens.reduce((s,i)=>s+i.preco*i.qtd,0);
+ let forma=prompt('Forma de pagamento:\\n1 - Pix\\n2 - Dinheiro\\n3 - Cartão\\n4 - Fiado\\n\\nDigite 1, 2, 3 ou 4:','1');
+ let mapa={'1':'Pix','2':'Dinheiro','3':'Cartão','4':'Fiado'};
+ if(!mapa[forma])return;
+ let status=forma==='4'?'Pendente':'Pago';
+ let data=prompt('Data da venda (AAAA-MM-DD):',new Date().toISOString().slice(0,10));
+ if(!data)return;
+ vendas.push({id:Date.now().toString(),clienteId:c.id,clienteNome:c.nome,data,total,forma:mapa[forma],status,itens:itens.map(i=>({...i}))});
+ c.itens=[];salvar();salvarV();
+ alert('Venda fechada com sucesso!');
+ ficha(id)
+}
+function diasAtraso(data){
+ if(!data)return 0;
+ let d=new Date(data+'T12:00'), hoje=new Date(); hoje.setHours(12,0,0,0);
+ return Math.floor((hoje-d)/86400000);
+}
+function registrarRecebimento(id){
+ let v=vendas.find(x=>x.id===id); if(!v)return;
+ let valor=prompt('Valor recebido:',String(v.total).replace('.',','));
+ let n=numero(valor); if(!n)return;
+ if(n>=v.total){
+   v.totalRecebido=v.total; v.status='Pago'; v.dataRecebimento=new Date().toISOString().slice(0,10);
+ }else{
+   v.totalRecebido=(v.totalRecebido||0)+n;
+   if(v.totalRecebido>=v.total){v.totalRecebido=v.total;v.status='Pago';}
+   else v.status='Parcial';
+   v.dataRecebimento=new Date().toISOString().slice(0,10);
+ }
+ salvarV(); renderReceber(); dashboard();
+ alert(v.status==='Pago'?'Pagamento quitado!':'Recebimento registrado. Saldo restante: '+moeda(v.total-v.totalRecebido));
+}
+function renderReceber(){
+ let arr=vendas.filter(v=>v.status!=='Pago');
+ let total=arr.reduce((s,v)=>s+(v.total-(v.totalRecebido||0)),0);
+ $('receberTotal').textContent=moeda(total); $('receberQtd').textContent=arr.length;
+ $('listaReceber').innerHTML=arr.length?arr.map(v=>{
+   let saldo=v.total-(v.totalRecebido||0), atraso=diasAtraso(v.data);
+   let aviso=atraso>0?'Atrasada há '+atraso+' dia(s)':atraso===0?'Vence hoje':'Vence em '+Math.abs(atraso)+' dia(s)';
+   return `<div class="item"><div class="row"><div><h3>${esc(v.clienteNome)}</h3><div class="muted">Venda: ${dataBR(v.data)} · ${esc(v.forma)}</div><div class="muted">${esc(aviso)}</div></div><div style="text-align:right"><b class="price">${moeda(saldo)}</b><br><button class="primary" onclick="registrarRecebimento('${v.id}')">Receber</button></div></div></div>`
+ }).join(''):'<div class="empty">🎉 Nenhuma conta pendente.</div>'
+}
+function renderHistorico(){
+ let q=($('buscaVenda')?.value||'').toLowerCase();
+ let arr=vendas.filter(v=>v.clienteNome.toLowerCase().includes(q)).slice().reverse();
+ $('listaHistorico').innerHTML=arr.length?arr.map(v=>`<div class="item"><div class="row"><div><h3>${esc(v.clienteNome)}</h3><div class="muted">${dataBR(v.data)} · ${esc(v.forma)}</div><div class="muted">${v.itens.length} item(ns)</div></div><div style="text-align:right"><b class="price">${moeda(v.total)}</b><br><span class="badge">${esc(v.status)}</span></div></div></div>`).join(''):'<div class="empty">Nenhuma venda encontrada.</div>'
+}
+function adicionarItem(id){
+ let c=clientes.find(x=>x.id===id);if(!produtos.length){alert('Cadastre uma mercadoria primeiro.');return}
+ let op=produtos.map((p,i)=>`${i+1} - ${p.nome} (${moeda(p.preco)})`).join('\n');
+ let escolha=prompt('Digite o número da mercadoria:\n\n'+op);let n=Number(escolha)-1,p=produtos[n];if(!p)return;
+ let qtd=Number(prompt('Quantidade:',1));if(!qtd||qtd<=0)return;
+ c.itens=c.itens||[];c.itens.push({produtoId:p.id,nome:p.nome,unidade:p.unidade||'unidade',preco:p.preco,qtd});salvar();ficha(id)
+}
+function removerItem(id,n){let c=clientes.find(x=>x.id===id);if(c&&confirm('Remover este item?')){c.itens.splice(n,1);salvar();ficha(id)}}
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+abrir('dashboard');
+</script>
+</body></html>
